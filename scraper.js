@@ -21,48 +21,43 @@ async function getProxyIP() {
   }
 }
 
-function getBravePath() {
-  const osType = process.platform;
-
-  switch (osType) {
-    case 'linux':
-      return '/snap/bin/brave'; // Assuming Brave is installed in PATH
-    case 'darwin':
-      return '/Applications/Brave.app/Contents/MacOS/Brave'; // macOS path
-    case 'win32':
-      return '"C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe"'; // Windows path
-    default:
-      throw new Error('Unsupported OS');
-  }
-}
-
 // Function to perform login and scrape content
 async function loginAndScrapeContent() {
   const browser = await puppeteer.launch({
-    headless: false, // Visible browser for interaction
-    executablePath: getBravePath(), // Launching with Brave browser
+    headless: true, // Visible browser for interaction
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
   const page = await browser.newPage();
-  await page.setViewport({ width: 1024, height: 768 });
+  await page.setViewport({ width: 1280, height: 720 });
 
   let trendingHeadlines = [];
   let ipAddress = "";
 
   try {
     console.log("Fetching page content via ScraperAPI...");
-    await page.goto(`https://api.scraperapi.com?api_key=${API_KEY}&url=https://x.com/login`, {
+    await page.goto(`https://x.com/login`, {
       waitUntil: "domcontentloaded",
     });
 
-    console.log("Navigating to login page...");
+    console.log("Entering Username...");
     await page.waitForSelector('input[name="text"]', { timeout: 30000 });
-    await page.type('input[name="text"]', { delay: 100 });
+    await page.type('input[name="text"]', process.env.TWITTER_USERNAME, { delay: 100 });
     await page.keyboard.press("Enter");
+
+    console.log("Checking for email field...");
+    const isEmailFieldVisible = await page
+      .waitForSelector('input[name="text"]', { timeout: 5000 }) // Same selector for email
+      .then(() => true)
+      .catch(() => false);
+      if (isEmailFieldVisible) {
+        console.log("Entering email...");
+        await page.type('input[name="text"]', process.env.TWITTER_EMAIL, { delay: 100 });
+        await page.keyboard.press("Enter");
+      }
 
     console.log("Waiting for password input...");
     await page.waitForSelector('input[name="password"]', { timeout: 30000 });
-    await page.type('input[name="password"]', { delay: 100 });
+    await page.type('input[name="password"]', process.env.TWITTER_PASSWORD, { delay: 100 });
     await page.keyboard.press("Enter");
 
     console.log("Waiting for home page...");
