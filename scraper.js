@@ -21,14 +21,30 @@ async function getProxyIP() {
   }
 }
 
+function getBravePath() {
+  const osType = process.platform;
+
+  switch (osType) {
+    case 'linux':
+      return '/snap/bin/brave'; // Assuming Brave is installed in PATH
+    case 'darwin':
+      return '/Applications/Brave.app/Contents/MacOS/Brave'; // macOS path
+    case 'win32':
+      return '"C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe"'; // Windows path
+    default:
+      throw new Error('Unsupported OS');
+  }
+}
+
 // Function to perform login and scrape content
 async function loginAndScrapeContent() {
   const browser = await puppeteer.launch({
     headless: false, // Visible browser for interaction
+    executablePath: getBravePath(), // Launching with Brave browser
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
   const page = await browser.newPage();
-  await page.setViewport({ width: 1366, height: 768 });
+  await page.setViewport({ width: 1024, height: 768 });
 
   let trendingHeadlines = [];
   let ipAddress = "";
