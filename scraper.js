@@ -26,6 +26,7 @@ async function loginAndScrapeContent() {
   const browser = await puppeteer.launch({
     headless: true, // Visible browser for interaction
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    cacheDirectory: "/opt/render/.cache/puppeteer",
   });
   const page = await browser.newPage();
   await page.setViewport({ width: 1280, height: 720 });
